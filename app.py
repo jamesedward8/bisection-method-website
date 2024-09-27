@@ -8,6 +8,87 @@ import base64
 
 app = Flask(__name__)
 
+
+#Route ke UI (file HTML)
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+#Route untuk menghitung metode biseksi
+@app.route('/calculate', methods=['POST'])
+def calculate():
+    try:
+        function = request.form['function']
+        x_l = float(request.form['x_l'])
+        x_u = float(request.form['x_u'])
+        kriteria = request.form['kriteria']
+
+        n = request.form['n'] if 'n' in request.form and request.form['n'] else None
+        n_iterasi = request.form['n_iterasi'] if 'n_iterasi' in request.form and request.form['n_iterasi'] else None
+        eps = request.form['eps'] if 'eps' in request.form and request.form['eps'] else None
+
+        if n is not None:
+            n = int(n)
+        if n_iterasi is not None:
+            n_iterasi = int(n_iterasi)
+        if eps is not None:
+            eps = float(eps)
+
+        f_x_l = evaluate_function(function, x_l)
+        f_x_u = evaluate_function(function, x_u)
+        
+        if f_x_l * f_x_u >= 0 or x_l == x_u:
+            return jsonify({"error": "Nilai f(x_l) dan f(x_u) harus berubah tanda / Akar tidak ditemukan."})
+
+        result, jumlah_iterasi, data = bisection_method(function, x_l, x_u, kriteria, n, n_iterasi, eps)
+        graph_img = graph_function(function, x_l, x_u, result)
+        return jsonify({
+            "hasil": result,
+            "jumlah_iterasi": jumlah_iterasi,
+            "data": data,
+            "graph": graph_img
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
+
+#Route untuk export file excel
+@app.route('/export', methods=['POST'])
+def export():
+    try:
+        data = request.json['data']
+        
+        column_order = [
+            "iterasi",
+            "x_l",
+            "x_u",
+            "f_x_l",
+            "f_x_u",
+            "x_r",
+            "f_x_r",
+            "abs f_x_r",  
+            "eps_a"
+        ]
+
+        df = pd.DataFrame(data)[column_order]
+
+        output = BytesIO()
+
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Bisection Results')
+
+        output.seek(0) 
+
+        return send_file(output, 
+                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                         as_attachment=True, 
+                         download_name='bisection_results.xlsx')
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
+
+#Fungsi untuk mendapatkan nilai f(x) pada titik x 
 def evaluate_function(function, x):
     x_symbol = sp.Symbol('x')
     function = function.replace('ln', 'log')
@@ -15,7 +96,9 @@ def evaluate_function(function, x):
     result = function.subs(x_symbol, x)
     return float(result) 
 
-def plot_function_with_roots(function, x_l, x_u, x_r):
+
+#Fungsi untuk mendapatkan grafik fungsi f(x) + akar persamaan
+def graph_function(function, x_l, x_u, x_r):
     x_symbol = sp.Symbol('x')
     function = sp.sympify(function)
     
@@ -55,6 +138,7 @@ def plot_function_with_roots(function, x_l, x_u, x_r):
     return img_base64
 
 
+#Fungsi untuk perhitungan biseksi
 def bisection_method(function, x_l, x_u, kriteria, n, n_iterasi, eps):
     eps_s = 0.5 * 10**(2-n)
     iter_count = 1
@@ -107,79 +191,6 @@ def bisection_method(function, x_l, x_u, kriteria, n, n_iterasi, eps):
         iter_count += 1
 
     return x_r, iter_count, data
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/calculate', methods=['POST'])
-def calculate():
-    try:
-        function = request.form['function']
-        x_l = float(request.form['x_l'])
-        x_u = float(request.form['x_u'])
-        kriteria = request.form['kriteria']
-
-        n = request.form['n'] if 'n' in request.form and request.form['n'] else None
-        n_iterasi = request.form['n_iterasi'] if 'n_iterasi' in request.form and request.form['n_iterasi'] else None
-        eps = request.form['eps'] if 'eps' in request.form and request.form['eps'] else None
-
-        if n is not None:
-            n = int(n)
-        if n_iterasi is not None:
-            n_iterasi = int(n_iterasi)
-        if eps is not None:
-            eps = float(eps)
-
-        f_x_l = evaluate_function(function, x_l)
-        f_x_u = evaluate_function(function, x_u)
-        
-        if f_x_l * f_x_u >= 0 or x_l == x_u:
-            return jsonify({"error": "Nilai f(x_l) dan f(x_u) harus berubah tanda / Akar tidak ditemukan."})
-
-        result, jumlah_iterasi, data = bisection_method(function, x_l, x_u, kriteria, n, n_iterasi, eps)
-        graph_img = plot_function_with_roots(function, x_l, x_u, result)
-        return jsonify({
-            "hasil": result,
-            "jumlah_iterasi": jumlah_iterasi,
-            "data": data,
-            "graph": graph_img
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)})
-    
-@app.route('/export', methods=['POST'])
-def export():
-    try:
-        data = request.json['data']
-        
-        column_order = [
-            "iterasi",
-            "x_l",
-            "x_u",
-            "f_x_l",
-            "f_x_u",
-            "x_r",
-            "f_x_r",
-            "abs f_x_r",  
-            "eps_a"
-        ]
-
-        df = pd.DataFrame(data)[column_order]
-
-        output = BytesIO()
-
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Bisection Results')
-
-        output.seek(0) 
-
-        return send_file(output, 
-                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
-                         as_attachment=True, 
-                         download_name='bisection_results.xlsx')
-    except Exception as e:
-        return jsonify({"error": str(e)})
 
 if __name__ == '__main__':      
     app.run(debug=True)

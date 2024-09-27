@@ -16,9 +16,9 @@
         <div class="wrapper">
             <!-- Header -->
             <header class="header">
-                <img src="{{ url_for('static', filename='logo_if.png') }}" class="logo-if" alt="Logo Informatika" title="Logo Informatika">
+                <img src="{{ url_for('static', filename='logo_if.png') }}" class="logo-if" alt="Logo Informatika" title="Informatika UBAYA">
                 <h1>BISECTION METHOD CALCULATOR</h1>
-                <img src="{{ url_for('static', filename='logo_ubaya.png') }}" class="logo-ubaya" alt="Logo Ubaya" title="Logo UBAYA">
+                <img src="{{ url_for('static', filename='logo_ubaya.png') }}" class="logo-ubaya" alt="Logo Ubaya" title="UBAYA">
             </header>
     
             <!-- Main Content -->
@@ -28,17 +28,17 @@
                         <form id="bisection-form">
                             <div class="mb-3">
                                 <label for="function" class="form-label">Masukkan fungsi f(x):</label>
-                                <input type="text" class="form-control" id="function" placeholder="e.g. x**3 + 5*x**2 - 10" required>
+                                <input type="text" class="form-control" id="function" placeholder="cth. x**3 + 5*x**2 - 10" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="x_l" class="form-label">Masukkan batas bawah interval (x<sub>l</sub>):</label>
-                                <input type="number" class="form-control" id="x_l" placeholder="e.g. -2" required>
+                                <input type="number" class="form-control" id="x_l" placeholder="cth. -2" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="x_u" class="form-label">Masukkan batas atas interval (x<sub>u</sub>):</label>
-                                <input type="number" class="form-control" id="x_u" placeholder="e.g. 2" required>
+                                <input type="number" class="form-control" id="x_u" placeholder="cth. 2" required>
                             </div>
 
                             <div class="mb-3">
@@ -53,17 +53,17 @@
                             <div id="criteria-container">
                                 <div id="criteria-n" class="mb-3">
                                     <label for="n" class="form-label">Masukkan digit signifikan:</label>
-                                    <input type="number" class="form-control" id="n" placeholder="e.g. 4" min="1" required>
+                                    <input type="number" class="form-control" id="n" placeholder="cth. 4" min="1" required>
                                 </div>
 
                                 <div id="criteria-n-iterasi" class="mb-3" style="display: none;">
                                     <label for="n_iterasi" class="form-label">Masukkan jumlah iterasi:</label>
-                                    <input type="number" class="form-control" id="n_iterasi" placeholder="e.g. 100" min="1">
+                                    <input type="number" class="form-control" id="n_iterasi" placeholder="cth. 100" min="1">
                                 </div>
 
                                 <div id="criteria-eps" class="mb-3" style="display: none;">
                                     <label for="eps" class="form-label">Masukkan nilai epsilon (&epsilon;):</label>
-                                    <input type="number" class="form-control" id="eps" placeholder="e.g. 0.0001" step="any">
+                                    <input type="number" class="form-control" id="eps" placeholder="cth. 0.0001" step="any">
                                 </div>
                             </div>
                             <button type="button" class="btn btn-custom w-100" onclick="calculateBisection()">Calculate</button>
@@ -87,7 +87,7 @@
     
             <!-- Footer -->
             <footer class="footer">
-                <p>&copy; 2024 Bisection Method Calculator.</p>
+                <p>&copy; 2024 Bisection Method Calculator | Numerical Methods</p>
             </footer>
         </div>
 
@@ -150,28 +150,28 @@
                 let eps = 0;
 
                 if (!func || !x_l || !x_u) {
-                    alert("Please fill in all the required fields.");
+                    alert("Harap isi semua kolom yang diperlukan!");
                     return;
                 }
 
                 if (kriteria === 'n') {     
                     n = document.getElementById('n').value;
                     if (!n) {
-                        alert("Please fill in all the required fields.");
+                        alert("Harap isi semua kolom yang diperlukan!");
                         return;
                     }
                 } 
                 else if (kriteria === 'n_iterasi') {
                     n_iterasi = document.getElementById('n_iterasi').value;
                     if (!n_iterasi) {
-                        alert("Please fill in all the required fields.");
+                        alert("Harap isi semua kolom yang diperlukan!");
                         return;
                     }
                 } 
                 else if (kriteria === 'eps') {
                     eps = document.getElementById('eps').value;
                     if (!eps) {
-                        alert("Please fill in all the required fields.");
+                        alert("Harap isi semua kolom yang diperlukan!");
                         return;
                     }
                 }
