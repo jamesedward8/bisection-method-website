@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bisection Method Calculator</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="icon" href="./static/title.png">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="./static/styles.css">
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <!-- Header -->
+            <header class="header">
+                <img src="{{ url_for('static', filename='logo_if.png') }}" class="logo-if" alt="Logo Informatika" title="Logo Informatika">
+                <h1>BISECTION METHOD CALCULATOR</h1>
+                <img src="{{ url_for('static', filename='logo_ubaya.png') }}" class="logo-ubaya" alt="Logo Ubaya" title="Logo UBAYA">
+            </header>
+    
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="form-wrapper">
+                    <div class="form-container">
+                        <form id="bisection-form">
+                            <div class="mb-3">
+                                <label for="function" class="form-label">Masukkan fungsi f(x):</label>
+                                <input type="text" class="form-control" id="function" placeholder="e.g. x**3 + 5*x**2 - 10" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="x_l" class="form-label">Masukkan batas bawah interval (x<sub>l</sub>):</label>
+                                <input type="number" class="form-control" id="x_l" placeholder="e.g. -2" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="x_u" class="form-label">Masukkan batas atas interval (x<sub>u</sub>):</label>
+                                <input type="number" class="form-control" id="x_u" placeholder="e.g. 2" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="kriteria" class="form-label">Pilih Kriteria Berhenti:</label>
+                                <select class="form-select" id="kriteria" onchange="updateCriteria()" required>
+                                    <option value="n">Jumlah Digit Signifikan</option>
+                                    <option value="n_iterasi">Jumlah Iterasi</option>
+                                    <option value="eps">Epsilon</option>
+                                </select>
+                            </div>
+
+                            <div id="criteria-container">
+                                <div id="criteria-n" class="mb-3">
+                                    <label for="n" class="form-label">Masukkan digit signifikan:</label>
+                                    <input type="number" class="form-control" id="n" placeholder="e.g. 4" min="1" required>
+                                </div>
+
+                                <div id="criteria-n-iterasi" class="mb-3" style="display: none;">
+                                    <label for="n_iterasi" class="form-label">Masukkan jumlah iterasi:</label>
+                                    <input type="number" class="form-control" id="n_iterasi" placeholder="e.g. 100" min="1">
+                                </div>
+
+                                <div id="criteria-eps" class="mb-3" style="display: none;">
+                                    <label for="eps" class="form-label">Masukkan nilai epsilon (&epsilon;):</label>
+                                    <input type="number" class="form-control" id="eps" placeholder="e.g. 0.0001" step="any">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-custom w-100" onclick="calculateBisection()">Calculate</button>
+                        </form>
+                    </div>
+                </div>
+    
+                <div class="members-container">
+                    <div class="members-title" onclick="toggleMembers()">MEMBERS</div>
+                    <div class="collapse" id="membersList">
+                        <ul class="list-group mt-2">
+                            <li class="list-group-item">1. Ryan Subagia - 160422024</li>
+                            <li class="list-group-item">2. Matthew Clifford - 160422025</li>
+                            <li class="list-group-item">3. Nadine Chow Abednego - 160422027</li>
+                            <li class="list-group-item">4. Michelle Christabel Fidelia Siswanto - 160422036</li>
+                            <li class="list-group-item">5. James Edward Siswanto - 160422038</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Footer -->
+            <footer class="footer">
+                <p>&copy; 2024 Bisection Method Calculator.</p>
+            </footer>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="resultModalLabel">Hasil Akar Persamaan dengan Metode Biseksi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                        <button type="button" class="btn btn-success w-100 mt-3" onclick="exportToExcel()">Export to Excel</button>
+                        <div id="result" class="mt-4"   >
+                            <!-- data generate dari js -->
+                        </div>
+                        <div class="graph-container text-center mt-4">
+                            <img id="graph-img" src="" alt="" class="img-fluid">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            function updateCriteria() {
+                const kriteria = document.getElementById('kriteria').value;
+                document.getElementById('criteria-n').style.display = 'none';
+                document.getElementById('criteria-n-iterasi').style.display = 'none';
+                document.getElementById('criteria-eps').style.display = 'none';
+
+                if (kriteria === 'n') {
+                    document.getElementById('criteria-n').style.display = 'block';
+                } else if (kriteria === 'n_iterasi') {
+                    document.getElementById('criteria-n-iterasi').style.display = 'block';
+                } else if (kriteria === 'eps') {
+                    document.getElementById('criteria-eps').style.display = 'block';
+                }
+            }
+
+            function toggleMembers() {
+                const membersList = document.getElementById('membersList');
+                membersList.classList.toggle('show');
+            }
+
+            let bisectionData = {};
+            function calculateBisection() {
+                const func = document.getElementById('function').value;
+                const x_l = document.getElementById('x_l').value;
+                const x_u = document.getElementById('x_u').value;
+                const kriteria = document.getElementById('kriteria').value;
+
+                let n = 0;
+                let n_iterasi = 0;
+                let eps = 0;
+
+                if (!func || !x_l || !x_u) {
+                    alert("Please fill in all the required fields.");
+                    return;
+                }
+
+                if (kriteria === 'n') {     
+                    n = document.getElementById('n').value;
+                    if (!n) {
+                        alert("Please fill in all the required fields.");
+                        return;
+                    }
+                } 
+                else if (kriteria === 'n_iterasi') {
+                    n_iterasi = document.getElementById('n_iterasi').value;
+                    if (!n_iterasi) {
+                        alert("Please fill in all the required fields.");
+                        return;
+                    }
+                } 
+                else if (kriteria === 'eps') {
+                    eps = document.getElementById('eps').value;
+                    if (!eps) {
+                        alert("Please fill in all the required fields.");
+                        return;
+                    }
+                }
+
+                const payload = {
+                    'function': func,
+                    'x_l': x_l,
+                    'x_u': x_u,
+                    'kriteria': kriteria,
+                    'n': n,
+                    'n_iterasi': n_iterasi,
+                    'eps': eps
+                };
+
+                fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    bisectionData = data;
+                    if (data.error) {
+                        document.getElementById('result').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+
+                        const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                        resultModal.show();
+                    } else {
+                        let resultHTML = 
+                        `<div class="alert alert-success">
+                            Akar ditemukan: x = ${data.hasil}<br>
+                            Jumlah Iterasi = ${data.jumlah_iterasi} 
+                        </div>`;
+
+                        resultHTML += 
+                        `<div class="table-responsive">
+                            <table class="table table-bordered mt-4">
+                                <thead>
+                                    <tr>
+                                        <th>Iterasi</th> 
+                                        <th>x<sub>l</sub></th> 
+                                        <th>x<sub>u</sub></th> 
+                                        <th>f(x<sub>l</sub>)</th> 
+                                        <th>f(x<sub>u</sub>)</th> 
+                                        <th>x<sub>r</sub></th> 
+                                        <th>f(x<sub>r</sub>)</th> 
+                                        <th>|f(x<sub>r</sub>)|</th> 
+                                        <th>ε<sub>a</sub> (%)</th>
+                                    </tr>
+                                </thead>
+                            <tbody>`;
+
+                        data.data.forEach((iter,index) => {
+                            let x_r_class = (index === data.data.length - 1) ? 'class="table-success-custom"' : '';
+                            resultHTML += `<tr>
+                                <td>${iter.iterasi}</td>
+                                <td>${iter.x_l}</td>
+                                <td>${iter.x_u}</td>
+                                <td>${iter.f_x_l}</td>
+                                <td>${iter.f_x_u}</td>
+                                <td ${x_r_class}>${iter.x_r}</td>
+                                <td>${iter.f_x_r}</td>
+                                <td>${Math.abs(iter.f_x_r)}</td>
+                                <td>${iter.eps_a}</td>
+                            </tr>`;
+                        });
+
+                        resultHTML += `</tbody></table></div>`;
+
+                        document.getElementById('result').innerHTML = resultHTML;
+                        document.getElementById('graph-img').src = `data:image/png;base64,${data.graph}`;
+                        
+                        const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                        resultModal.show();
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('result').innerHTML = 
+                    `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+
+                    const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                    resultModal.show();
+                });
+
+            }
+            
+            function exportToExcel() {
+                if (!bisectionData || !bisectionData.data) {
+                    alert("No data to export. Please calculate the result first.");
+                    return;
+                }
+                fetch('/export', {
+                    method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ data: bisectionData.data })
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'bisection_results.xlsx';
+                    document.body.appendChild(a);  
+                    a.click();  
+                    a.remove(); 
+                })
+                .catch(error => console.error('Error exporting data:', error));
+            }
+        </script>
+        
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    </body>
+</html>
