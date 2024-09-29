@@ -27,17 +27,17 @@
                     <div class="form-container">
                         <form id="bisection-form">
                             <div class="mb-3">
-                                <label for="function" class="form-label">Masukkan fungsi f(x):</label>
+                                <label for="function" class="form-label">Masukkan Fungsi f(x):</label>
                                 <input type="text" class="form-control" id="function" placeholder="cth. x**3 + 5*x**2 - 10" required>
                             </div>
 
                             <div class="mb-3">
-                                <label for="x_l" class="form-label">Masukkan batas bawah interval (x<sub>l</sub>):</label>
+                                <label for="x_l" class="form-label">Masukkan Batas Bawah Interval (x<sub>l</sub>):</label>
                                 <input type="number" class="form-control" id="x_l" placeholder="cth. -2" required>
                             </div>
 
                             <div class="mb-3">
-                                <label for="x_u" class="form-label">Masukkan batas atas interval (x<sub>u</sub>):</label>
+                                <label for="x_u" class="form-label">Masukkan Batas Atas Interval (x<sub>u</sub>):</label>
                                 <input type="number" class="form-control" id="x_u" placeholder="cth. 2" required>
                             </div>
 
@@ -52,17 +52,17 @@
 
                             <div id="criteria-container">
                                 <div id="criteria-n" class="mb-3">
-                                    <label for="n" class="form-label">Masukkan digit signifikan:</label>
+                                    <label for="n" class="form-label">Masukkan Digit Signifikan:</label>
                                     <input type="number" class="form-control" id="n" placeholder="cth. 4" min="1" required>
                                 </div>
 
                                 <div id="criteria-n-iterasi" class="mb-3" style="display: none;">
-                                    <label for="n_iterasi" class="form-label">Masukkan jumlah iterasi:</label>
+                                    <label for="n_iterasi" class="form-label">Masukkan Jumlah Iterasi:</label>
                                     <input type="number" class="form-control" id="n_iterasi" placeholder="cth. 100" min="1">
                                 </div>
 
                                 <div id="criteria-eps" class="mb-3" style="display: none;">
-                                    <label for="eps" class="form-label">Masukkan nilai epsilon (&epsilon;):</label>
+                                    <label for="eps" class="form-label">Masukkan Nilai Epsilon (&epsilon;):</label>
                                     <input type="number" class="form-control" id="eps" placeholder="cth. 0.0001" step="any">
                                 </div>
                             </div>
@@ -152,28 +152,33 @@
                 let eps = 0;
 
                 if (!func || !x_l || !x_u) {
-                    alert("Harap isi semua kolom yang diperlukan!");
+                    alert("Harap isi semua data yang diperlukan!");
+                    return;
+                }
+
+                if (x_l > x_u) {
+                    alert("Batas bawah interval harus lebih kecil dari batas atas interval!");
                     return;
                 }
 
                 if (kriteria === 'n') {     
                     n = document.getElementById('n').value;
                     if (!n) {
-                        alert("Harap isi semua kolom yang diperlukan!");
+                        alert("Harap isi semua data yang diperlukan!");
                         return;
                     }
                 } 
                 else if (kriteria === 'n_iterasi') {
                     n_iterasi = document.getElementById('n_iterasi').value;
                     if (!n_iterasi) {
-                        alert("Harap isi semua kolom yang diperlukan!");
+                        alert("Harap isi semua data yang diperlukan!");
                         return;
                     }
                 } 
                 else if (kriteria === 'eps') {
                     eps = document.getElementById('eps').value;
                     if (!eps) {
-                        alert("Harap isi semua kolom yang diperlukan!");
+                        alert("Harap isi semua data yang diperlukan!");
                         return;
                     }
                 }
@@ -186,6 +191,12 @@
                     'n': n,
                     'n_iterasi': n_iterasi,
                     'eps': eps
+                };
+
+                const kriteriaBerhenti = {
+                    'n': 'Jumlah Digit Signifikan',
+                    'n_iterasi': 'Jumlah Iterasi',
+                    'eps': 'Epsilon'
                 };
 
                 fetch('/calculate', {
@@ -204,8 +215,11 @@
                         const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
                         resultModal.show();
                     } else {
+                        let selectedKriteria = kriteriaBerhenti[data.kriteria]; 
+
                         let resultHTML = 
                         `<div class="alert alert-success">
+                            Kriteria Berhenti: ${selectedKriteria}<br>
                             Akar ditemukan: x = ${data.hasil}<br>
                             Jumlah Iterasi = ${data.jumlah_iterasi} 
                         </div>`;
@@ -254,7 +268,7 @@
                 })
                 .catch(error => {
                     document.getElementById('result').innerHTML = 
-                    `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+                    `<div class="alert alert-danger">Error: ${error.message}</div>`;
 
                     const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
                     resultModal.show();
@@ -264,7 +278,7 @@
             
             function exportToExcel() {
                 if (!bisectionData || !bisectionData.data) {
-                    alert("No data to export. Please calculate the result first.");
+                    alert("Tidak Ada Data!");
                     return;
                 }
                 fetch('/export', {

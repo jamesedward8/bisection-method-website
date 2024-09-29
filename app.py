@@ -47,7 +47,8 @@ def calculate():
             "hasil": result,
             "jumlah_iterasi": jumlah_iterasi,
             "data": data,
-            "graph": graph_img
+            "graph": graph_img,
+            "kriteria": kriteria
         })
     except Exception as e:
         return jsonify({"error": str(e)})
