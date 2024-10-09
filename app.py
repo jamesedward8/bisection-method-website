@@ -8,7 +8,6 @@ import base64
 
 app = Flask(__name__)
 
-
 #Route ke UI (file HTML)
 @app.route('/')
 def index():
