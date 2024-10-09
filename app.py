@@ -193,5 +193,6 @@ def bisection_method(function, x_l, x_u, kriteria, n, n_iterasi, eps):
 
     return x_r, iter_count, data
 
+
 if __name__ == '__main__':      
     app.run(debug=True)
